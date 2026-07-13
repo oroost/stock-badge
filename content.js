@@ -60,7 +60,7 @@
 
     el.addEventListener('mousedown', (e) => {
       const t = e.target;
-      if (t.id === 'stock-badge-close' || t.id === 'stock-badge-mini-close') return;
+      if (t.id === 'stock-badge-close' || t.id === 'stock-badge-mini-close' || t.id === 'stock-badge-copy') return;
       pending = true;
       const r = el.getBoundingClientRect();
       startTop = r.top; startLeft = r.left;
@@ -128,10 +128,22 @@
     badge.id = 'stock-badge-ext';
     badge.innerHTML = `
       <button id="stock-badge-close" title="Close">✕</button>
-      <div id="stock-badge-sym">${ticker} <span id="stock-badge-tf">${timeframe}</span></div>
+      <div id="stock-badge-sym">
+        ${ticker} <span id="stock-badge-tf">${timeframe}</span>
+        <button id="stock-badge-copy" title="Copy ticker">⎘</button>
+      </div>
       <div id="stock-badge-price">—</div>
       <div id="stock-badge-change"></div>
     `;
+
+    document.getElementById('stock-badge-copy').addEventListener('click', (e) => {
+      e.stopPropagation();
+      navigator.clipboard.writeText(ticker).then(() => {
+        const btn = document.getElementById('stock-badge-copy');
+        btn.textContent = '✓';
+        setTimeout(() => { btn.textContent = '⎘'; }, 1500);
+      });
+    });
     document.body.appendChild(badge);
     makeDraggable(badge);
 

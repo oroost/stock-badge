@@ -48,6 +48,18 @@
   font-family: inherit !important;
 }
 
+#stock-badge-copy {
+  all: initial !important;
+  font-family: sans-serif !important;
+  font-size: 12px !important;
+  color: rgba(255,255,255,0.25) !important;
+  cursor: pointer !important;
+  margin-left: 4px !important;
+  vertical-align: middle !important;
+  line-height: 1 !important;
+}
+#stock-badge-copy:hover { color: #ffffff !important; }
+
 #stock-badge-tf {
   font-size: 9px !important;
   font-weight: 600 !important;
