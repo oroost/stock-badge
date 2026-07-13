@@ -21,8 +21,18 @@
     const timeframe = data.timeframe || '1D';
     if (!ticker || ticker === 'N/A') return;
 
-    const sessionKey    = 'sbShown_' + rootDomain;
-    const dismissedKey  = 'sbDismissed_' + rootDomain;
+    const sessionKey   = 'sbShown_' + rootDomain;
+    const dismissedKey = 'sbDismissed_' + rootDomain;
+
+    try {
+      const refHost = document.referrer ? new URL(document.referrer).hostname.toLowerCase().replace(/^www\./, '') : '';
+      const refRoot = refHost.split('.').slice(-2).join('.');
+      if (refRoot !== rootDomain) {
+        sessionStorage.removeItem(sessionKey);
+        sessionStorage.removeItem(dismissedKey);
+      }
+    } catch (_) {}
+
     if (sessionStorage.getItem(dismissedKey)) return;
     const isFirstVisit = !sessionStorage.getItem(sessionKey);
 
