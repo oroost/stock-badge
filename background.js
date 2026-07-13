@@ -3,6 +3,43 @@
 const cache = new Map();
 const CACHE_TTL = 5 * 60 * 1000;
 
+const EXCHANGE_HOURS = {
+  'SW': { tz: 'Europe/Zurich',     open: [9,0],  close: [17,30] },
+  'DE': { tz: 'Europe/Berlin',     open: [9,0],  close: [17,30] },
+  'PA': { tz: 'Europe/Paris',      open: [9,0],  close: [17,30] },
+  'AS': { tz: 'Europe/Amsterdam',  open: [9,0],  close: [17,30] },
+  'MI': { tz: 'Europe/Rome',       open: [9,0],  close: [17,30] },
+  'MC': { tz: 'Europe/Madrid',     open: [9,0],  close: [17,30] },
+  'L' : { tz: 'Europe/London',     open: [8,0],  close: [16,30] },
+  'T' : { tz: 'Asia/Tokyo',        open: [9,0],  close: [15,30] },
+  'HK': { tz: 'Asia/Hong_Kong',    open: [9,30], close: [16,0]  },
+  'US': { tz: 'America/New_York',  open: [9,30], close: [16,0]  },
+};
+
+function computeMarketState(ticker) {
+  const now = new Date();
+  const dow = now.getUTCDay();
+  if (dow === 0 || dow === 6) return 'CLOSED';
+
+  const suffix = ticker.includes('.') ? ticker.split('.').pop().toUpperCase() : 'US';
+  const ex = EXCHANGE_HOURS[suffix] || EXCHANGE_HOURS['US'];
+
+  const fmt = new Intl.DateTimeFormat('en-US', {
+    timeZone: ex.tz, hour: 'numeric', minute: 'numeric', hour12: false
+  });
+  const parts = fmt.formatToParts(now);
+  const h = parseInt(parts.find(p => p.type === 'hour').value);
+  const m = parseInt(parts.find(p => p.type === 'minute').value);
+  const cur  = h * 60 + m;
+  const open = ex.open[0]  * 60 + ex.open[1];
+  const cls  = ex.close[0] * 60 + ex.close[1];
+
+  if (cur >= open && cur < cls) return 'REGULAR';
+  if (cur >= open - 90 && cur < open) return 'PRE';
+  if (cur >= cls && cur < cls + 120) return 'POST';
+  return 'CLOSED';
+}
+
 const TF_CONFIG = {
   '1D': { range: '2d',  interval: '1d'  },
   '1W': { range: '5d',  interval: '1d'  },
@@ -29,7 +66,7 @@ function parseData(json, tf, ticker) {
 
   const change        = price - startPrice;
   const changePercent = (change / startPrice) * 100;
-  const marketState = meta.marketState ?? 'CLOSED';
+  const marketState = computeMarketState(ticker);
   return { price, change, changePercent, currency, ticker, marketState };
 }
 
