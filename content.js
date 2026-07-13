@@ -21,7 +21,9 @@
     const timeframe = data.timeframe || '1D';
     if (!ticker || ticker === 'N/A') return;
 
-    const sessionKey = 'sbShown_' + rootDomain;
+    const sessionKey    = 'sbShown_' + rootDomain;
+    const dismissedKey  = 'sbDismissed_' + rootDomain;
+    if (sessionStorage.getItem(dismissedKey)) return;
     const isFirstVisit = !sessionStorage.getItem(sessionKey);
 
     const cachedRaw = sessionStorage.getItem(`sbData_${ticker}_${timeframe}`);
@@ -53,7 +55,11 @@
     const closeBtn = document.createElement('span');
     closeBtn.id = 'stock-badge-mini-close';
     closeBtn.textContent = '✕';
-    closeBtn.addEventListener('click', (e) => { e.stopPropagation(); mini.remove(); });
+    closeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      sessionStorage.setItem('sbDismissed_' + rootDomain, '1');
+      mini.remove();
+    });
     mini.appendChild(closeBtn);
 
     mini.addEventListener('click', () => { mini.remove(); onExpand(); });
