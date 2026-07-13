@@ -75,6 +75,30 @@
 #stock-badge-ext.up   #stock-badge-change { color: #00d97e !important; }
 #stock-badge-ext.down #stock-badge-change { color: #ff4757 !important; }
 
+#stock-badge-dot {
+  display: inline-block !important;
+  width: 7px !important;
+  height: 7px !important;
+  border-radius: 50% !important;
+  margin-right: 5px !important;
+  vertical-align: middle !important;
+  margin-bottom: 1px !important;
+}
+.dot-open     { background: #00d97e !important; box-shadow: 0 0 4px #00d97e !important; }
+.dot-extended { background: #ffa502 !important; box-shadow: 0 0 4px #ffa502 !important; }
+.dot-closed   { background: #747d8c !important; }
+
+@keyframes sb-pulse-up {
+  0%, 100% { border-left-color: #00d97e !important; box-shadow: 0 8px 32px rgba(0,0,0,0.45) !important; }
+  50%       { border-left-color: #00ff9d !important; box-shadow: 0 0 18px rgba(0, 217, 126, 0.6) !important; }
+}
+@keyframes sb-pulse-down {
+  0%, 100% { border-left-color: #ff4757 !important; box-shadow: 0 8px 32px rgba(0,0,0,0.45) !important; }
+  50%       { border-left-color: #ff6b81 !important; box-shadow: 0 0 18px rgba(255, 71, 87, 0.6) !important; }
+}
+#stock-badge-ext.big-move.up   { animation: stock-badge-in 0.25s ease, sb-pulse-up   1.5s ease-in-out 0.3s 4 !important; }
+#stock-badge-ext.big-move.down { animation: stock-badge-in 0.25s ease, sb-pulse-down 1.5s ease-in-out 0.3s 4 !important; }
+
 #stock-badge-mini {
   all: initial;
   position: fixed !important;

@@ -29,7 +29,8 @@ function parseData(json, tf, ticker) {
 
   const change        = price - startPrice;
   const changePercent = (change / startPrice) * 100;
-  return { price, change, changePercent, currency, ticker };
+  const marketState = meta.marketState ?? 'CLOSED';
+  return { price, change, changePercent, currency, ticker, marketState };
 }
 
 function buildUrl(ticker, tf, host = 'query1') {

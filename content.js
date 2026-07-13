@@ -156,19 +156,25 @@
 
       sessionStorage.setItem(`sbData_${ticker}_${timeframe}`, JSON.stringify(stockData));
 
-      const { price, change, changePercent, currency } = stockData;
+      const { price, change, changePercent, currency, marketState } = stockData;
       const symbols = { USD: '$', EUR: '€', GBP: '£', CHF: 'Fr.' };
       const sym = symbols[currency] || '';
       const sign = change >= 0 ? '+' : '';
 
+      const dotClass = marketState === 'REGULAR' ? 'dot-open'
+                     : (marketState === 'PRE' || marketState === 'POST') ? 'dot-extended'
+                     : 'dot-closed';
+
       document.getElementById('stock-badge-price').textContent =
         `${sym}${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-      document.getElementById('stock-badge-change').textContent =
-        `${sign}${changePercent.toFixed(2)}%`;
+      document.getElementById('stock-badge-change').innerHTML =
+        `<span id="stock-badge-dot" class="${dotClass}"></span>${sign}${changePercent.toFixed(2)}%`;
 
       if (change > 0) badge.classList.add('up');
       else if (change < 0) badge.classList.add('down');
       else badge.classList.add('flat');
+
+      if (Math.abs(changePercent) >= 3) badge.classList.add('big-move');
     });
   }
 })();
