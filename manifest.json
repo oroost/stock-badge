@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "Stock Badge",
+  "version": "1.0.0",
+  "description": "Shows the live stock price of the company website you are visiting.",
+  "host_permissions": [
+    "*://query1.finance.yahoo.com/*",
+    "*://query2.finance.yahoo.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["tickers.js", "content.js"],
+      "css": ["badge.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
