@@ -95,6 +95,13 @@
   letter-spacing: 0.3px !important;
 }
 #stock-badge-mini:hover { color: #fff !important; border-color: rgba(255,255,255,0.3) !important; }
+#stock-badge-mini-close {
+  margin-left: 7px !important;
+  font-size: 9px !important;
+  opacity: 0.4 !important;
+  vertical-align: middle !important;
+}
+#stock-badge-mini-close:hover { opacity: 1 !important; }
 #stock-badge-mini.up   { color: #00d97e !important; border-left: 3px solid #00d97e !important; }
 #stock-badge-mini.down { color: #ff4757 !important; border-left: 3px solid #ff4757 !important; }
 #stock-badge-mini.flat { color: #747d8c !important; border-left: 3px solid #747d8c !important; }

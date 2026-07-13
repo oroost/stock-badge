@@ -50,6 +50,12 @@
       mini.textContent = `${ticker} 📈`;
     }
 
+    const closeBtn = document.createElement('span');
+    closeBtn.id = 'stock-badge-mini-close';
+    closeBtn.textContent = '✕';
+    closeBtn.addEventListener('click', (e) => { e.stopPropagation(); mini.remove(); });
+    mini.appendChild(closeBtn);
+
     mini.addEventListener('click', () => { mini.remove(); onExpand(); });
     document.body.appendChild(mini);
   }
