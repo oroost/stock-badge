@@ -48,6 +48,14 @@
   font-family: inherit !important;
 }
 
+#stock-badge-tf {
+  font-size: 9px !important;
+  font-weight: 600 !important;
+  color: rgba(255,255,255,0.3) !important;
+  letter-spacing: 0.5px !important;
+  vertical-align: middle !important;
+}
+
 #stock-badge-price {
   font-size: 20px !important;
   font-weight: 700 !important;

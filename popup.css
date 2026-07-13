@@ -1,0 +1,121 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  width: 300px;
+  background: #0f0f1a;
+  color: #e0e0e0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 13px;
+  padding: 16px;
+}
+
+h1 {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  color: #fff;
+}
+
+h2 {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 8px;
+}
+
+.tf-section { margin-bottom: 16px; }
+
+#tf-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.tf-btn {
+  flex: 1;
+  background: #1c1c2e;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 7px;
+  color: rgba(255,255,255,0.5);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 0;
+  cursor: pointer;
+}
+.tf-btn:hover { border-color: rgba(255,255,255,0.3); color: #fff; }
+.tf-btn.active { background: #00d97e; border-color: #00d97e; color: #000; }
+
+.add-section { margin-bottom: 18px; }
+
+.row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+input {
+  flex: 1;
+  background: #1c1c2e;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 7px;
+  color: #fff;
+  font-size: 12px;
+  padding: 7px 10px;
+  outline: none;
+}
+input:focus { border-color: #00d97e; }
+
+#btn-add {
+  width: 100%;
+  background: #00d97e;
+  color: #000;
+  border: none;
+  border-radius: 7px;
+  padding: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+#btn-add:hover { background: #00f090; }
+
+.msg {
+  font-size: 11px;
+  margin-top: 6px;
+  min-height: 14px;
+}
+.msg.error { color: #ff4757; }
+.msg.success { color: #00d97e; }
+
+.list-section ul { list-style: none; }
+
+.list-section li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #1c1c2e;
+  border-radius: 7px;
+  padding: 8px 10px;
+  margin-bottom: 5px;
+}
+
+.entry-info { display: flex; flex-direction: column; gap: 1px; }
+.entry-domain { font-size: 12px; color: #fff; }
+.entry-ticker { font-size: 10px; color: rgba(255,255,255,0.4); font-weight: 700; letter-spacing: 0.5px; }
+
+.btn-del {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.3);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 2px 4px;
+}
+.btn-del:hover { color: #ff4757; }
+
+.hint {
+  font-size: 11px;
+  color: rgba(255,255,255,0.25);
+  text-align: center;
+  margin-top: 4px;
+}
