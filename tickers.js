@@ -85,41 +85,47 @@ const DOMAIN_TICKERS = {
   'ge.com':             'GE',
   'exxonmobil.com':     'XOM',
   'chevron.com':        'CVX',
-  'shell.com':          'SHEL',
-  'bp.com':             'BP',
-  'siemens.com':        'SIEGY',
-  'abb.com':            'ABB',
 
   // Healthcare / Pharma
   'pfizer.com':         'PFE',
   'abbvie.com':         'ABBV',
   'merck.com':          'MRK',
   'lilly.com':          'LLY',
-  'novartis.com':       'NVS',
-  'roche.com':          'RHHBY',
-  'biontech.de':        'BNTX',
   'modernatx.com':      'MRNA',
   'jnj.com':            'JNJ',
 
-  // Swiss
-  'nestle.com':         'NSRGY',
-  'ubs.com':            'UBS',
-  'zurich.com':         'ZURVY',
-  'lonza.com':          'LZAGY',
-  'sika.com':           'SXYAY',
-  'swisscom.ch':        'SCMWY',
-  'credit-suisse.com':  'UBS',
+  // Swiss (SIX Swiss Exchange)
+  'nestle.com':         'NESN.SW',
+  'ubs.com':            'UBSG.SW',
+  'zurich.com':         'ZURN.SW',
+  'lonza.com':          'LONN.SW',
+  'sika.com':           'SIKA.SW',
+  'swisscom.ch':        'SCMN.SW',
+  'credit-suisse.com':  'UBSG.SW',
+  'novartis.com':       'NOVN.SW',
+  'roche.com':          'ROG.SW',
+  'abb.com':            'ABBN.SW',
 
-  // European
-  'volkswagen.com':     'VWAGY',
-  'bmw.com':            'BMWYY',
-  'mercedes-benz.com':  'MBGYY',
-  'sap.com':            'SAP',
-  'asml.com':           'ASML',
-  'totalenergies.com':  'TTE',
-  'airbus.com':         'EADSY',
-  'allianz.com':        'ALIZY',
-  'basf.com':           'BASFY',
+  // German (XETRA)
+  'volkswagen.com':     'VOW3.DE',
+  'bmw.com':            'BMW.DE',
+  'mercedes-benz.com':  'MBG.DE',
+  'sap.com':            'SAP.DE',
+  'siemens.com':        'SIE.DE',
+  'allianz.com':        'ALV.DE',
+  'basf.com':           'BAS.DE',
+
+  // French (Euronext Paris)
+  'lvmh.com':           'MC.PA',
+  'totalenergies.com':  'TTE.PA',
+  'airbus.com':         'AIR.PA',
+
+  // Dutch
+  'asml.com':           'ASML.AS',
+  'shell.com':          'SHEL.AS',
+
+  // UK (London Stock Exchange)
+  'bp.com':             'BP.L',
 
   // Asian
   'samsung.com':        'SSNLF',
