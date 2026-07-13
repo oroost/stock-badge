@@ -47,6 +47,45 @@
     }
   });
 
+  function makeDraggable(el) {
+    const saved = JSON.parse(localStorage.getItem('sbPosition') || 'null');
+    if (saved) {
+      el.style.setProperty('bottom', 'auto', 'important');
+      el.style.setProperty('right',  'auto', 'important');
+      el.style.setProperty('top',  saved.top  + 'px', 'important');
+      el.style.setProperty('left', saved.left + 'px', 'important');
+    }
+
+    let dragging = false, ox, oy, startTop, startLeft;
+
+    el.addEventListener('mousedown', (e) => {
+      const t = e.target;
+      if (t.id === 'stock-badge-close' || t.id === 'stock-badge-mini-close') return;
+      dragging = true;
+      const r = el.getBoundingClientRect();
+      startTop = r.top; startLeft = r.left;
+      ox = e.clientX; oy = e.clientY;
+      el.style.setProperty('bottom', 'auto', 'important');
+      el.style.setProperty('right',  'auto', 'important');
+      el.style.setProperty('top',  startTop  + 'px', 'important');
+      el.style.setProperty('left', startLeft + 'px', 'important');
+      el.style.setProperty('cursor', 'grabbing', 'important');
+      e.preventDefault();
+    });
+    document.addEventListener('mousemove', (e) => {
+      if (!dragging) return;
+      el.style.setProperty('top',  (startTop  + e.clientY - oy) + 'px', 'important');
+      el.style.setProperty('left', (startLeft + e.clientX - ox) + 'px', 'important');
+    });
+    document.addEventListener('mouseup', () => {
+      if (!dragging) return;
+      dragging = false;
+      el.style.setProperty('cursor', '', 'important');
+      const r = el.getBoundingClientRect();
+      localStorage.setItem('sbPosition', JSON.stringify({ top: r.top, left: r.left }));
+    });
+  }
+
   function showMini(ticker, timeframe, stockData, onExpand) {
     if (document.getElementById('stock-badge-mini')) return;
     const mini = document.createElement('div');
@@ -74,6 +113,7 @@
 
     mini.addEventListener('click', () => { mini.remove(); onExpand(); });
     document.body.appendChild(mini);
+    makeDraggable(mini);
   }
 
   function showBadge(ticker, timeframe) {
@@ -86,6 +126,7 @@
       <div id="stock-badge-change"></div>
     `;
     document.body.appendChild(badge);
+    makeDraggable(badge);
 
     function closeBadge() {
       badge.remove();
