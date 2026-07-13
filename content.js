@@ -136,15 +136,16 @@
       <div id="stock-badge-change"></div>
     `;
 
-    document.getElementById('stock-badge-copy').addEventListener('click', (e) => {
+    document.body.appendChild(badge);
+
+    badge.querySelector('#stock-badge-copy').addEventListener('click', (e) => {
       e.stopPropagation();
       navigator.clipboard.writeText(ticker).then(() => {
-        const btn = document.getElementById('stock-badge-copy');
+        const btn = badge.querySelector('#stock-badge-copy');
         btn.textContent = '✓';
-        setTimeout(() => { btn.textContent = '⎘'; }, 1500);
+        setTimeout(() => { if (btn) btn.textContent = '⎘'; }, 1500);
       });
     });
-    document.body.appendChild(badge);
     makeDraggable(badge);
 
     function closeBadge() {
