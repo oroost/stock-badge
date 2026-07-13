@@ -96,8 +96,8 @@
   0%, 100% { border-left-color: #ff4757 !important; box-shadow: 0 8px 32px rgba(0,0,0,0.45) !important; }
   50%       { border-left-color: #ff6b81 !important; box-shadow: 0 0 18px rgba(255, 71, 87, 0.6) !important; }
 }
-#stock-badge-ext.big-move.up   { animation: stock-badge-in 0.25s ease, sb-pulse-up   1.5s ease-in-out 0.3s 4 !important; }
-#stock-badge-ext.big-move.down { animation: stock-badge-in 0.25s ease, sb-pulse-down 1.5s ease-in-out 0.3s 4 !important; }
+#stock-badge-ext.big-move.up   { animation: sb-pulse-up   1.5s ease-in-out 0s 4 !important; }
+#stock-badge-ext.big-move.down { animation: sb-pulse-down 1.5s ease-in-out 0s 4 !important; }
 
 #stock-badge-mini {
   all: initial;

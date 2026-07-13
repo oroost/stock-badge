@@ -174,7 +174,7 @@
       else if (change < 0) badge.classList.add('down');
       else badge.classList.add('flat');
 
-      if (Math.abs(changePercent) >= 3) badge.classList.add('big-move');
+      if (timeframe === '1D' && Math.abs(changePercent) >= 3) badge.classList.add('big-move');
     });
   }
 })();
