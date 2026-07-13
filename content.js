@@ -56,33 +56,40 @@
       el.style.setProperty('left', saved.left + 'px', 'important');
     }
 
-    let dragging = false, ox, oy, startTop, startLeft;
+    let pending = false, dragging = false, ox, oy, startTop, startLeft;
 
     el.addEventListener('mousedown', (e) => {
       const t = e.target;
       if (t.id === 'stock-badge-close' || t.id === 'stock-badge-mini-close') return;
-      dragging = true;
+      pending = true;
       const r = el.getBoundingClientRect();
       startTop = r.top; startLeft = r.left;
       ox = e.clientX; oy = e.clientY;
-      el.style.setProperty('bottom', 'auto', 'important');
-      el.style.setProperty('right',  'auto', 'important');
-      el.style.setProperty('top',  startTop  + 'px', 'important');
-      el.style.setProperty('left', startLeft + 'px', 'important');
-      el.style.setProperty('cursor', 'grabbing', 'important');
-      e.preventDefault();
     });
     document.addEventListener('mousemove', (e) => {
-      if (!dragging) return;
-      el.style.setProperty('top',  (startTop  + e.clientY - oy) + 'px', 'important');
-      el.style.setProperty('left', (startLeft + e.clientX - ox) + 'px', 'important');
+      if (!pending && !dragging) return;
+      if (!dragging && Math.hypot(e.clientX - ox, e.clientY - oy) > 4) {
+        dragging = true;
+        el.style.setProperty('bottom', 'auto', 'important');
+        el.style.setProperty('right',  'auto', 'important');
+        el.style.setProperty('top',  startTop  + 'px', 'important');
+        el.style.setProperty('left', startLeft + 'px', 'important');
+        el.style.setProperty('cursor', 'grabbing', 'important');
+      }
+      if (dragging) {
+        el.style.setProperty('top',  (startTop  + e.clientY - oy) + 'px', 'important');
+        el.style.setProperty('left', (startLeft + e.clientX - ox) + 'px', 'important');
+        e.preventDefault();
+      }
     });
-    document.addEventListener('mouseup', () => {
+    document.addEventListener('mouseup', (e) => {
+      pending = false;
       if (!dragging) return;
       dragging = false;
       el.style.setProperty('cursor', '', 'important');
       const r = el.getBoundingClientRect();
       localStorage.setItem('sbPosition', JSON.stringify({ top: r.top, left: r.left }));
+      el.addEventListener('click', e => e.stopPropagation(), { once: true });
     });
   }
 
