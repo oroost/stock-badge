@@ -86,51 +86,68 @@ async function fetchEarningsData(ticker) {
   let daysUntil = null;
   let beats = 0, total = 0;
 
-  // ── Use chart API (already proven to work) with events=earnings ──
+  // ── 1. quoteSummary: calendarEvents (next date) + earningsHistory (beat/miss) ──
   for (const host of ['query1', 'query2']) {
     try {
-      const url = `https://${host}.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=3mo&range=3y&events=earnings`;
+      const url = `https://${host}.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(ticker)}?modules=calendarEvents%2CearningsHistory`;
       const r = await fetch(url);
+      if (!r.ok) throw new Error();
       const json = await r.json();
-      const events = json?.chart?.result?.[0]?.events?.earnings;
-      if (events) {
-        const nowSec = Date.now() / 1000;
-        const future = [];
-        for (const [ts, e] of Object.entries(events)) {
-          const t = parseInt(ts);
-          if (t > nowSec) {
-            future.push(t);
-          } else if (e.epsActual !== undefined && e.epsEstimate !== undefined) {
-            total++;
-            if (e.epsActual >= e.epsEstimate) beats++;
-          }
-        }
-        if (future.length > 0) {
-          future.sort((a, b) => a - b);
-          const next = new Date(future[0] * 1000);
-          const today = new Date(); today.setHours(0, 0, 0, 0);
-          daysUntil = Math.ceil((next - today) / 86400000);
-        }
-        break;
+      const result = json?.quoteSummary?.result?.[0];
+      if (!result) throw new Error();
+
+      // Next earnings date
+      const dates = result?.calendarEvents?.earnings?.earningsDate ?? [];
+      if (dates.length > 0) {
+        const ts = dates[0].raw;
+        const next = new Date(ts * 1000);
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        daysUntil = Math.ceil((next - today) / 86400000);
       }
+
+      // Beat/miss history
+      const history = result?.earningsHistory?.history ?? [];
+      for (const q of history.slice(-10)) {
+        if (q.epsActual?.raw !== undefined && q.epsEstimate?.raw !== undefined) {
+          total++;
+          if (q.epsActual.raw >= q.epsEstimate.raw) beats++;
+        }
+      }
+      break;
     } catch (_) {}
   }
 
-  // ── Fallback: v7/finance/quote for next earnings date ────────
+  // ── 2. Fallback: v7/quote for date + chart events for beat/miss ──
   if (daysUntil === null) {
     try {
-      const r = await fetch(
-        `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(ticker)}`
-      );
+      const r = await fetch(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(ticker)}`);
       const json = await r.json();
       const q = json?.quoteResponse?.result?.[0];
       const ts = q?.earningsTimestampStart ?? q?.earningsTimestamp;
-      if (ts && ts * 1000 > Date.now()) {
+      if (ts) {
         const next = new Date(ts * 1000);
         const today = new Date(); today.setHours(0, 0, 0, 0);
         daysUntil = Math.ceil((next - today) / 86400000);
       }
     } catch (_) {}
+  }
+
+  if (total === 0) {
+    for (const host of ['query1', 'query2']) {
+      try {
+        const url = `https://${host}.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=2y&events=earnings`;
+        const r = await fetch(url);
+        const json = await r.json();
+        const events = json?.chart?.result?.[0]?.events?.earnings ?? {};
+        for (const e of Object.values(events)) {
+          if (e.epsActual !== undefined && e.epsEstimate !== undefined) {
+            total++;
+            if (e.epsActual >= e.epsEstimate) beats++;
+          }
+        }
+        if (total > 0) break;
+      } catch (_) {}
+    }
   }
 
   const data = { daysUntil, beats, total };
