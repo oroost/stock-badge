@@ -125,27 +125,34 @@
   }
 
   function renderEarnings(ticker, badge) {
-    chrome.storage.sync.get(['showEarnings'], (pref) => { if (!pref.showEarnings) return;
-    chrome.runtime.sendMessage({ type: 'FETCH_EARNINGS', ticker }, (data) => {
-      if (chrome.runtime.lastError || !data || data.error) return;
-      if (!document.contains(badge)) return;
-      const { daysUntil, beats, total } = data;
-      let text = '';
-      if (daysUntil !== null) {
-        if (daysUntil === 0)      text = '📅 Earnings today!';
-        else if (daysUntil > 0)   text = `📅 Earnings in ${daysUntil}d`;
-        else                      text = `📅 Earnings ${Math.abs(daysUntil)}d ago`;
-      }
-      if (total > 0) {
-        const emoji = beats / total >= 0.7 ? '✅' : beats / total >= 0.5 ? '➡️' : '❌';
-        text += (text ? '  ·  ' : '') + `${emoji} Beat ${beats}/${total}`;
-      }
-      if (!text) return;
+    chrome.storage.sync.get(['showEarnings'], (pref) => {
+      if (!pref.showEarnings) return;
+
       const el = document.createElement('div');
       el.id = 'stock-badge-earnings';
-      el.textContent = text;
+      el.textContent = '📅 …';
       badge.appendChild(el);
-    }); });
+
+      chrome.runtime.sendMessage({ type: 'FETCH_EARNINGS', ticker }, (data) => {
+        if (!document.contains(el)) return;
+        if (chrome.runtime.lastError || !data || data.error) {
+          el.textContent = '📅 unavailable';
+          return;
+        }
+        const { daysUntil, beats, total } = data;
+        let text = '';
+        if (daysUntil !== null) {
+          if (daysUntil === 0)    text = '📅 Earnings today!';
+          else if (daysUntil > 0) text = `📅 Earnings in ${daysUntil}d`;
+          else                    text = `📅 Earnings ${Math.abs(daysUntil)}d ago`;
+        }
+        if (total > 0) {
+          const emoji = beats / total >= 0.7 ? '✅' : beats / total >= 0.5 ? '➡️' : '❌';
+          text += (text ? '  ·  ' : '') + `${emoji} Beat ${beats}/${total}`;
+        }
+        el.textContent = text || '📅 no data';
+      });
+    });
   }
 
   function showBadge(ticker, timeframe, showEarnings) {
