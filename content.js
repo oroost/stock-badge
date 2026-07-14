@@ -50,11 +50,17 @@
 
   function makeDraggable(el) {
     const saved = JSON.parse(localStorage.getItem('sbPosition') || 'null');
-    if (saved) {
-      el.style.setProperty('bottom', 'auto', 'important');
-      el.style.setProperty('right',  'auto', 'important');
-      el.style.setProperty('top',  saved.top  + 'px', 'important');
-      el.style.setProperty('left', saved.left + 'px', 'important');
+    if (saved && saved.right !== undefined) {
+      const maxR = Math.max(8, window.innerWidth  - el.offsetWidth  - 8);
+      const maxB = Math.max(8, window.innerHeight - el.offsetHeight - 8);
+      const r = Math.min(Math.max(8, saved.right),  maxR);
+      const b = Math.min(Math.max(8, saved.bottom), maxB);
+      el.style.setProperty('top',    'auto', 'important');
+      el.style.setProperty('left',   'auto', 'important');
+      el.style.setProperty('right',  r + 'px', 'important');
+      el.style.setProperty('bottom', b + 'px', 'important');
+    } else {
+      localStorage.removeItem('sbPosition');
     }
 
     let pending = false, dragging = false, ox, oy, startTop, startLeft;
@@ -63,16 +69,16 @@
       const t = e.target;
       if (t.id === 'stock-badge-close' || t.id === 'stock-badge-mini-close' || t.id === 'stock-badge-copy') return;
       pending = true;
-      const r = el.getBoundingClientRect();
-      startTop = r.top; startLeft = r.left;
+      const rect = el.getBoundingClientRect();
+      startTop = rect.top; startLeft = rect.left;
       ox = e.clientX; oy = e.clientY;
     });
     document.addEventListener('mousemove', (e) => {
       if (!pending && !dragging) return;
       if (!dragging && Math.hypot(e.clientX - ox, e.clientY - oy) > 4) {
         dragging = true;
-        el.style.setProperty('bottom', 'auto', 'important');
         el.style.setProperty('right',  'auto', 'important');
+        el.style.setProperty('bottom', 'auto', 'important');
         el.style.setProperty('top',  startTop  + 'px', 'important');
         el.style.setProperty('left', startLeft + 'px', 'important');
         el.style.setProperty('cursor', 'grabbing', 'important');
@@ -83,13 +89,19 @@
         e.preventDefault();
       }
     });
-    document.addEventListener('mouseup', (e) => {
+    document.addEventListener('mouseup', () => {
       pending = false;
       if (!dragging) return;
       dragging = false;
-      el.style.setProperty('cursor', '', 'important');
-      const r = el.getBoundingClientRect();
-      localStorage.setItem('sbPosition', JSON.stringify({ top: r.top, left: r.left }));
+      el.style.setProperty('cursor', 'grab', 'important');
+      const rect = el.getBoundingClientRect();
+      const right  = Math.max(8, window.innerWidth  - rect.right);
+      const bottom = Math.max(8, window.innerHeight - rect.bottom);
+      el.style.setProperty('top',    'auto', 'important');
+      el.style.setProperty('left',   'auto', 'important');
+      el.style.setProperty('right',  right  + 'px', 'important');
+      el.style.setProperty('bottom', bottom + 'px', 'important');
+      localStorage.setItem('sbPosition', JSON.stringify({ right, bottom }));
       el.addEventListener('click', e => e.stopPropagation(), { once: true });
     });
   }
