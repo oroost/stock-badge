@@ -78,6 +78,18 @@ function buildUrl(ticker, tf, host = 'query1') {
 const earningsCache = new Map();
 const EARNINGS_TTL  = 12 * 60 * 60 * 1000;
 
+let _crumb = null, _crumbTs = 0;
+async function getYahooCrumb() {
+  if (_crumb && Date.now() - _crumbTs < 60 * 60 * 1000) return _crumb;
+  const r = await fetch('https://query1.finance.yahoo.com/v1/test/getcrumb', {
+    credentials: 'include'
+  });
+  if (!r.ok) throw new Error('no crumb');
+  _crumb = (await r.text()).trim();
+  _crumbTs = Date.now();
+  return _crumb;
+}
+
 async function fetchEarningsData(ticker) {
   const key = `earnings:${ticker}`;
   const cached = earningsCache.get(key);
@@ -86,28 +98,30 @@ async function fetchEarningsData(ticker) {
   let daysUntil = null;
   let beats = 0, total = 0;
 
-  // ── 1. quoteSummary: calendarEvents (next date) + earningsHistory (beat/miss) ──
+  // ── Get Yahoo crumb (required for v10/v7 endpoints) ──────────
+  let crumb = '';
+  try { crumb = await getYahooCrumb(); } catch (_) {}
+  const cq = crumb ? `&crumb=${encodeURIComponent(crumb)}` : '';
+  const opts = { credentials: 'include' };
+
+  // ── 1. quoteSummary: calendarEvents + earningsHistory ────────
   for (const host of ['query1', 'query2']) {
     try {
-      const url = `https://${host}.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(ticker)}?modules=calendarEvents%2CearningsHistory`;
-      const r = await fetch(url);
+      const url = `https://${host}.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(ticker)}?modules=calendarEvents%2CearningsHistory${cq}`;
+      const r = await fetch(url, opts);
       if (!r.ok) throw new Error();
       const json = await r.json();
       const result = json?.quoteSummary?.result?.[0];
       if (!result) throw new Error();
 
-      // Next earnings date
       const dates = result?.calendarEvents?.earnings?.earningsDate ?? [];
       if (dates.length > 0) {
-        const ts = dates[0].raw;
-        const next = new Date(ts * 1000);
+        const next = new Date(dates[0].raw * 1000);
         const today = new Date(); today.setHours(0, 0, 0, 0);
         daysUntil = Math.ceil((next - today) / 86400000);
       }
 
-      // Beat/miss history
-      const history = result?.earningsHistory?.history ?? [];
-      for (const q of history.slice(-10)) {
+      for (const q of (result?.earningsHistory?.history ?? []).slice(-10)) {
         if (q.epsActual?.raw !== undefined && q.epsEstimate?.raw !== undefined) {
           total++;
           if (q.epsActual.raw >= q.epsEstimate.raw) beats++;
@@ -117,10 +131,12 @@ async function fetchEarningsData(ticker) {
     } catch (_) {}
   }
 
-  // ── 2. Fallback: v7/quote for date + chart events for beat/miss ──
+  // ── 2. Fallback: v7/quote for next date ──────────────────────
   if (daysUntil === null) {
     try {
-      const r = await fetch(`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(ticker)}`);
+      const r = await fetch(
+        `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(ticker)}${cq}`, opts
+      );
       const json = await r.json();
       const q = json?.quoteResponse?.result?.[0];
       const ts = q?.earningsTimestampStart ?? q?.earningsTimestamp;
@@ -132,11 +148,12 @@ async function fetchEarningsData(ticker) {
     } catch (_) {}
   }
 
+  // ── 3. Chart API with events=earnings for beat/miss ──────────
   if (total === 0) {
     for (const host of ['query1', 'query2']) {
       try {
-        const url = `https://${host}.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=2y&events=earnings`;
-        const r = await fetch(url);
+        const url = `https://${host}.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=2y&events=earnings${cq}`;
+        const r = await fetch(url, opts);
         const json = await r.json();
         const events = json?.chart?.result?.[0]?.events?.earnings ?? {};
         for (const e of Object.values(events)) {
