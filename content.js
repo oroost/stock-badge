@@ -15,10 +15,11 @@
     return t;
   }
 
-  chrome.storage.sync.get(['customTickers', 'timeframe'], (data) => {
+  chrome.storage.sync.get(['customTickers', 'timeframe', 'showEarnings'], (data) => {
     const allTickers = Object.assign({}, DOMAIN_TICKERS, data.customTickers || {});
     const ticker = findTicker(allTickers);
     const timeframe = data.timeframe || '1D';
+    const showEarnings = data.showEarnings === true;
     if (!ticker || ticker === 'N/A') return;
 
     const sessionKey   = 'sbShown_' + rootDomain;
@@ -41,9 +42,9 @@
 
     if (isFirstVisit) {
       sessionStorage.setItem(sessionKey, '1');
-      showBadge(ticker, timeframe);
+      showBadge(ticker, timeframe, showEarnings);
     } else {
-      showMini(ticker, timeframe, cachedData, () => showBadge(ticker, timeframe));
+      showMini(ticker, timeframe, cachedData, () => showBadge(ticker, timeframe, showEarnings));
     }
   });
 
@@ -123,7 +124,31 @@
     makeDraggable(mini);
   }
 
-  function showBadge(ticker, timeframe) {
+  function renderEarnings(ticker, badge) {
+    chrome.runtime.sendMessage({ type: 'FETCH_EARNINGS', ticker }, (data) => {
+      if (chrome.runtime.lastError || !data || data.error) return;
+      if (!document.contains(badge)) return;
+      const { daysUntil, beats, total } = data;
+      let text = '';
+      if (daysUntil !== null) {
+        if (daysUntil === 0)      text = '📅 Earnings today!';
+        else if (daysUntil > 0)   text = `📅 Earnings in ${daysUntil}d`;
+        else                      text = `📅 Earnings ${Math.abs(daysUntil)}d ago`;
+      }
+      if (total > 0) {
+        if (text) text += '  ·  ';
+        const emoji = beats / total >= 0.7 ? '✅' : beats / total >= 0.5 ? '➡️' : '❌';
+        text += `${emoji} Beat ${beats}/${total}`;
+      }
+      if (!text) return;
+      const el = document.createElement('div');
+      el.id = 'stock-badge-earnings';
+      el.textContent = text;
+      badge.appendChild(el);
+    });
+  }
+
+  function showBadge(ticker, timeframe, showEarnings) {
     const badge = document.createElement('div');
     badge.id = 'stock-badge-ext';
     badge.innerHTML = `
@@ -152,7 +177,7 @@
       badge.remove();
       const cachedRaw = sessionStorage.getItem(`sbData_${ticker}_${timeframe}`);
       const cachedData = cachedRaw ? JSON.parse(cachedRaw) : null;
-      showMini(ticker, timeframe, cachedData, () => showBadge(ticker, timeframe));
+      showMini(ticker, timeframe, cachedData, () => showBadge(ticker, timeframe, showEarnings));
     }
 
     document.getElementById('stock-badge-close').addEventListener('click', closeBadge);
@@ -188,6 +213,8 @@
       else badge.classList.add('flat');
 
       if (timeframe === '1D' && Math.abs(changePercent) >= 3) badge.classList.add('big-move');
+
+      if (showEarnings) renderEarnings(ticker, badge);
     });
   }
 })();

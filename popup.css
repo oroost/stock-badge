@@ -46,6 +46,39 @@ h2 {
 .tf-btn:hover { border-color: rgba(255,255,255,0.3); color: #fff; }
 .tf-btn.active { background: #00d97e; border-color: #00d97e; color: #000; }
 
+.toggle-section { margin-bottom: 16px; }
+.toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #1c1c2e;
+  border-radius: 9px;
+  padding: 10px 12px;
+}
+.toggle-label { font-size: 12px; font-weight: 600; color: #fff; margin-bottom: 2px; }
+.toggle-desc  { font-size: 10px; color: rgba(255,255,255,0.35); }
+
+.switch { position: relative; display: inline-block; width: 36px; height: 20px; flex-shrink: 0; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+  position: absolute; inset: 0;
+  background: rgba(255,255,255,0.1);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.slider::before {
+  content: '';
+  position: absolute;
+  width: 14px; height: 14px;
+  left: 3px; bottom: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+.switch input:checked + .slider { background: #00d97e; }
+.switch input:checked + .slider::before { transform: translateX(16px); }
+
 .add-section { margin-bottom: 18px; }
 
 .row {

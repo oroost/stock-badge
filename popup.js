@@ -77,10 +77,16 @@ function remove(domain) {
 btnAdd.addEventListener('click', add);
 inpTicker.addEventListener('keydown', (e) => { if (e.key === 'Enter') add(); });
 
+const toggleEarnings = document.getElementById('toggle-earnings');
+toggleEarnings.addEventListener('change', () => {
+  chrome.storage.sync.set({ showEarnings: toggleEarnings.checked });
+});
+
 function load() {
-  chrome.storage.sync.get(['customTickers', 'timeframe'], (data) => {
+  chrome.storage.sync.get(['customTickers', 'timeframe', 'showEarnings'], (data) => {
     renderList(data.customTickers || {});
     setActiveTf(data.timeframe || '1D');
+    toggleEarnings.checked = data.showEarnings === true;
   });
 }
 
