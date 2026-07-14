@@ -137,9 +137,8 @@
         else                      text = `📅 Earnings ${Math.abs(daysUntil)}d ago`;
       }
       if (total > 0) {
-        if (text) text += '  ·  ';
         const emoji = beats / total >= 0.7 ? '✅' : beats / total >= 0.5 ? '➡️' : '❌';
-        text += `${emoji} Beat ${beats}/${total}`;
+        text += (text ? '  ·  ' : '') + `${emoji} Beat ${beats}/${total}`;
       }
       if (!text) return;
       const el = document.createElement('div');

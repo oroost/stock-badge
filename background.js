@@ -83,36 +83,40 @@ async function fetchEarningsData(ticker) {
   const cached = earningsCache.get(key);
   if (cached && Date.now() - cached.ts < EARNINGS_TTL) return cached.data;
 
-  const url = host => `https://${host}.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(ticker)}?modules=calendarEvents%2CearningsHistory`;
-  let json;
-  try {
-    const r = await fetch(url('query1'));
-    if (!r.ok) throw new Error();
-    json = await r.json();
-  } catch {
-    const r = await fetch(url('query2'));
-    json = await r.json();
-  }
-
-  const result = json?.quoteSummary?.result?.[0];
-  if (!result) throw new Error('No earnings data');
-
-  const earningsDates = result?.calendarEvents?.earnings?.earningsDate ?? [];
   let daysUntil = null;
-  if (earningsDates.length > 0) {
-    const next = new Date(earningsDates[0].raw * 1000);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    daysUntil = Math.ceil((next - today) / 86400000);
-  }
-
-  const history = result?.earningsHistory?.history ?? [];
   let beats = 0, total = 0;
-  for (const q of history.slice(-10)) {
-    if (q.epsActual?.raw !== undefined && q.epsEstimate?.raw !== undefined) {
-      total++;
-      if (q.epsActual.raw >= q.epsEstimate.raw) beats++;
+
+  // ── Next earnings date via v7/finance/quote (no crumb needed) ──
+  try {
+    const r = await fetch(
+      `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(ticker)}&fields=earningsTimestamp,earningsTimestampStart,earningsTimestampEnd`
+    );
+    const json = await r.json();
+    const q = json?.quoteResponse?.result?.[0];
+    const ts = q?.earningsTimestampStart ?? q?.earningsTimestamp;
+    if (ts) {
+      const next = new Date(ts * 1000);
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      daysUntil = Math.ceil((next - today) / 86400000);
     }
+  } catch (_) {}
+
+  // ── Beat / miss history via quoteSummary ──────────────────────
+  for (const host of ['query1', 'query2']) {
+    try {
+      const r = await fetch(
+        `https://${host}.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(ticker)}?modules=earningsHistory`
+      );
+      const json = await r.json();
+      const history = json?.quoteSummary?.result?.[0]?.earningsHistory?.history ?? [];
+      for (const q of history.slice(-10)) {
+        if (q.epsActual?.raw !== undefined && q.epsEstimate?.raw !== undefined) {
+          total++;
+          if (q.epsActual.raw >= q.epsEstimate.raw) beats++;
+        }
+      }
+      break;
+    } catch (_) {}
   }
 
   const data = { daysUntil, beats, total };
