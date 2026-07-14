@@ -96,7 +96,7 @@ async function fetchEarningsData(ticker) {
   if (cached && Date.now() - cached.ts < EARNINGS_TTL) return cached.data;
 
   let daysUntil = null;
-  let beats = 0, total = 0;
+  let beats = 0, total = 0, lastSurprise = null;
 
   // ── Get Yahoo crumb (required for v10/v7 endpoints) ──────────
   let crumb = '';
@@ -121,11 +121,18 @@ async function fetchEarningsData(ticker) {
         daysUntil = Math.ceil((next - today) / 86400000);
       }
 
-      for (const q of (result?.earningsHistory?.history ?? []).slice(-10)) {
+      const history = result?.earningsHistory?.history ?? [];
+      for (const q of history.slice(-10)) {
         if (q.epsActual?.raw !== undefined && q.epsEstimate?.raw !== undefined) {
           total++;
           if (q.epsActual.raw >= q.epsEstimate.raw) beats++;
         }
+      }
+      const last = history[history.length - 1];
+      if (last?.surprisePercent?.raw !== undefined) {
+        lastSurprise = last.surprisePercent.raw * 100;
+      } else if (last?.epsActual?.raw !== undefined && last?.epsEstimate?.raw && last.epsEstimate.raw !== 0) {
+        lastSurprise = ((last.epsActual.raw - last.epsEstimate.raw) / Math.abs(last.epsEstimate.raw)) * 100;
       }
       break;
     } catch (_) {}
@@ -167,7 +174,7 @@ async function fetchEarningsData(ticker) {
     }
   }
 
-  const data = { daysUntil, beats, total };
+  const data = { daysUntil, beats, total, lastSurprise };
   earningsCache.set(key, { data, ts: Date.now() });
   return data;
 }

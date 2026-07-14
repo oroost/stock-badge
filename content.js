@@ -139,18 +139,26 @@
           el.textContent = '📅 unavailable';
           return;
         }
-        const { daysUntil, beats, total } = data;
-        let text = '';
-        if (daysUntil !== null) {
-          if (daysUntil === 0)    text = '📅 Earnings today!';
-          else if (daysUntil > 0) text = `📅 Earnings in ${daysUntil}d`;
-          else                    text = `📅 Earnings ${Math.abs(daysUntil)}d ago`;
+        const { daysUntil, beats, total, lastSurprise } = data;
+        const parts = [];
+
+        if (daysUntil !== null && daysUntil === 0) {
+          parts.push('📅 Earnings today!');
+        } else if (daysUntil !== null && daysUntil > 0 && daysUntil <= 90) {
+          parts.push(`📅 in ${daysUntil}d`);
+        } else if (daysUntil !== null && daysUntil < 0 && daysUntil >= -14 && lastSurprise !== null) {
+          const sign = lastSurprise >= 0 ? '+' : '';
+          const dir  = lastSurprise >= 0 ? 'beat' : 'missed';
+          parts.push(`📅 last Q: ${dir} ${sign}${lastSurprise.toFixed(1)}%`);
         }
+
         if (total > 0) {
           const emoji = beats / total >= 0.7 ? '✅' : beats / total >= 0.5 ? '➡️' : '❌';
-          text += (text ? '  ·  ' : '') + `${emoji} Beat ${beats}/${total}`;
+          parts.push(`${emoji} ${beats}/${total} beats`);
         }
-        el.textContent = text || '📅 no data';
+
+        el.textContent = parts.join('  ·  ');
+        if (!el.textContent) el.remove();
       });
     });
   }
