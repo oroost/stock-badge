@@ -125,6 +125,7 @@
   }
 
   function renderEarnings(ticker, badge) {
+    chrome.storage.sync.get(['showEarnings'], (pref) => { if (!pref.showEarnings) return;
     chrome.runtime.sendMessage({ type: 'FETCH_EARNINGS', ticker }, (data) => {
       if (chrome.runtime.lastError || !data || data.error) return;
       if (!document.contains(badge)) return;
@@ -145,7 +146,7 @@
       el.id = 'stock-badge-earnings';
       el.textContent = text;
       badge.appendChild(el);
-    });
+    }); });
   }
 
   function showBadge(ticker, timeframe, showEarnings) {
@@ -214,7 +215,7 @@
 
       if (timeframe === '1D' && Math.abs(changePercent) >= 3) badge.classList.add('big-move');
 
-      if (showEarnings) renderEarnings(ticker, badge);
+      renderEarnings(ticker, badge);
     });
   }
 })();
